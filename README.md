@@ -2,10 +2,10 @@
 
 > **Make outbound SIP calls from Python · Play WAV files over RTP · Detect DTMF keypresses · Blind call transfer · Zero dependencies · Python 3.8–3.13**
 
-[![PyPI version](https://img.shields.io/pypi/v/siprobo.svg?color=blue&label=PyPI)](https://pypi.org/project/siprobo/)
-[![Python versions](https://img.shields.io/pypi/pyversions/siprobo.svg)](https://pypi.org/project/siprobo/)
+[![PyPI version](https://img.shields.io/pypi/v/siprobo.svg?color=blue&label=PyPI&cacheSeconds=1)](https://pypi.org/project/siprobo/)
+[![Python versions](https://img.shields.io/pypi/pyversions/siprobo.svg?cacheSeconds=1)](https://pypi.org/project/siprobo/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PyPI downloads](https://img.shields.io/pypi/dm/siprobo.svg?label=PyPI%20downloads)](https://pypi.org/project/siprobo/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/siprobo.svg?label=PyPI%20downloads&cacheSeconds=1)](https://pypi.org/project/siprobo/)
 [![GitHub stars](https://img.shields.io/github/stars/matifkhatri/siprobo?style=social)](https://github.com/matifkhatri/siprobo/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/matifkhatri/siprobo?style=social)](https://github.com/matifkhatri/siprobo/network/members)
 
