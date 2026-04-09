@@ -1,47 +1,37 @@
 # siprobo — Python SIP Auto-Dialler for Asterisk
 
-> **Outbound SIP calls · WAV playback over RTP · RFC 2833 DTMF detection · Blind call transfer · Zero dependencies**
+> **Make outbound SIP calls from Python · Play WAV files over RTP · Detect DTMF keypresses · Blind call transfer · Zero dependencies · Python 3.8–3.13**
 
-[![PyPI version](https://img.shields.io/pypi/v/siprobo.svg?color=blue)](https://pypi.org/project/siprobo/)
+[![PyPI version](https://img.shields.io/pypi/v/siprobo.svg?color=blue&label=PyPI)](https://pypi.org/project/siprobo/)
 [![Python versions](https://img.shields.io/pypi/pyversions/siprobo.svg)](https://pypi.org/project/siprobo/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PyPI downloads](https://img.shields.io/pypi/dm/siprobo.svg)](https://pypi.org/project/siprobo/)
-[![GitHub stars](https://img.shields.io/github/stars/matifkhatri/siprobo?style=social)](https://github.com/matifkhatri/siprobo)
+[![PyPI downloads](https://img.shields.io/pypi/dm/siprobo.svg?label=PyPI%20downloads)](https://pypi.org/project/siprobo/)
+[![GitHub stars](https://img.shields.io/github/stars/matifkhatri/siprobo?style=social)](https://github.com/matifkhatri/siprobo/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/matifkhatri/siprobo?style=social)](https://github.com/matifkhatri/siprobo/network/members)
 
-**siprobo** is a lightweight, pure-Python SIP client that dials any phone number through an **Asterisk PBX**, plays a **WAV audio file** over RTP (G.711 PCMU/PCMA), detects **DTMF keypresses** (RFC 2833), and performs **blind call transfers** — all with zero external dependencies and full Python 3.8–3.13 support.
+**siprobo** is a pure-Python SIP client library and command-line tool for placing **automated outbound phone calls** through an **Asterisk PBX** server. It streams any **WAV audio file** over RTP using **G.711 PCMU or PCMA** codec, listens for **RFC 2833 DTMF keypresses**, and performs **SIP REFER blind call transfers** — all with **zero external Python dependencies** and support for Python 3.8 through 3.13.
 
----
-
-## Key Features
-
-| Feature | Detail |
-|---|---|
-| **Outbound SIP INVITE** | RFC 3261 compliant — works with Asterisk, FreePBX, FusionPBX |
-| **SIP Digest Authentication** | Auto-handles 401/407 challenges (MD5, qop=auth) |
-| **WAV Playback over RTP** | Any sample rate, bit depth, mono/stereo — auto-converts to G.711 |
-| **Codec Auto-Negotiation** | Detects PCMU (PT=0) or PCMA (PT=8) from SDP answer |
-| **RFC 2833 DTMF Detection** | Listens for telephone-event (PT=101) packets in real time |
-| **Blind Call Transfer** | Sends SIP REFER on configurable DTMF digit |
-| **Re-INVITE Handling** | Responds correctly to mid-call server re-INVITEs |
-| **Transport Auto-Detection** | `--transport auto` probes UDP then TCP |
-| **Retry with Backoff** | Configurable exponential backoff on failed attempts |
-| **Concurrent Calls** | Thread-pool based parallel dialling via `make_calls_concurrent()` |
-| **JSON Call Logging** | Appends structured records to a log file per call |
-| **Graceful Interrupt** | Ctrl+C sends CANCEL (ringing) or BYE (answered) cleanly |
-| **Zero Dependencies** | Pure Python standard library — no pip installs required |
-| **Python 3.8–3.13** | Works on all modern Python versions |
+Whether you need a **Python SIP autodialler**, a **VoIP notification bot**, an **IVR system**, or a **SIP call tester**, siprobo gives you a clean Python API and a ready-to-use command-line interface.
 
 ---
 
-## Installation
+## Why siprobo?
+
+- **No SIP stack required** — pure Python stdlib, no `pjsua`, no `linphone`, no native libs
+- **Works on any OS** — Windows, Linux, macOS
+- **Any WAV file** — auto-resamples to 8 kHz G.711, any input format accepted
+- **Production ready** — retry logic, concurrent calls, JSON logging, graceful shutdown
+- **RFC compliant** — RFC 3261 (SIP), RFC 2833 (DTMF), RFC 3550 (RTP)
+
+---
+
+## Install
 
 ```bash
 pip install siprobo
 ```
 
-### Python 3.13+
-
-`audioop` was removed from the stdlib in Python 3.13. Install the drop-in replacement:
+**Python 3.13+** (audioop removed from stdlib):
 
 ```bash
 pip install "siprobo[py313]"
@@ -49,33 +39,80 @@ pip install "siprobo[py313]"
 
 ---
 
-## Quick Start
+## Quick Start — Make a SIP Call from Python in 30 Seconds
 
-### 1. Place a call and play a WAV message
+### Command line
 
 ```bash
 siprobo \
-  --host  192.0.2.10 \
+  --host  YOUR_ASTERISK_IP \
   --phone 15551234567 \
-  --wav   /path/to/message.wav \
+  --wav   message.wav \
   --caller-id 1001 \
   --auth-user 1001 \
   --auth-pass yourpassword
 ```
 
-What happens:
-1. Connects to your Asterisk server via SIP/UDP
-2. Handles Digest auth challenge automatically
-3. When answered, streams the WAV over RTP (G.711 PCMU/PCMA)
-4. Sends a clean in-dialog BYE when playback finishes
+### Python code
+
+```python
+from siprobo.caller import make_call
+
+answered = make_call(
+    host      = "YOUR_ASTERISK_IP",
+    phone     = "15551234567",
+    wav_path  = "message.wav",
+    caller_id = "1001",
+    auth_user = "1001",
+    auth_pass = "yourpassword",
+)
+print("Call answered:", answered)
+```
 
 ---
 
-### 2. DTMF-triggered blind transfer
+## Features
+
+| Feature | Detail |
+|---|---|
+| **Outbound SIP INVITE** | RFC 3261 — Asterisk, FreePBX, FusionPBX, any SIP server |
+| **SIP Digest Authentication** | Auto 401/407 retry with MD5 Digest (qop=auth) |
+| **WAV Playback over RTP** | Any sample rate / bit depth — auto G.711 conversion |
+| **Codec Auto-Negotiation** | Reads SDP answer — picks PCMU (PT=0) or PCMA (PT=8) |
+| **RFC 2833 DTMF Detection** | Detects telephone-event PT=101 packets in real time |
+| **Blind Call Transfer** | SIP REFER on configured DTMF digit |
+| **Re-INVITE Handling** | 100 Trying + 200 OK + SDP for mid-call re-INVITEs |
+| **Transport Auto-Detection** | `--transport auto` — probes UDP then TCP |
+| **Retry with Backoff** | Exponential backoff — configurable attempts and delay |
+| **Concurrent Calls** | `make_calls_concurrent()` thread-pool dialler |
+| **JSON Call Logging** | Per-call records: status, duration, DTMF, transfer target |
+| **Graceful Ctrl+C** | CANCEL (ringing) or BYE (answered) on interrupt |
+| **Zero Dependencies** | 100% Python standard library |
+| **Python 3.8–3.13** | All modern Python versions supported |
+
+---
+
+## Use Cases
+
+- **Automated voice notifications** — call customers and play a recorded message
+- **IVR (Interactive Voice Response)** — detect keypress and transfer the call
+- **SIP connectivity testing** — verify Asterisk is reachable before deploying
+- **Bulk outbound dialling** — run 10+ concurrent calls via thread pool
+- **VoIP bot / autodialler** — Python-controlled call flow with DTMF logic
+- **Asterisk integration testing** — test your dialplan without a SIP phone
+- **Python SIP INVITE sender** — send raw SIP INVITE with full auth handling
+
+---
+
+## Full Usage Examples
+
+### 1. DTMF-triggered blind transfer
+
+Press **0** or **1** → call is blind-transferred to another number:
 
 ```bash
 siprobo \
-  --host           192.0.2.10 \
+  --host           YOUR_ASTERISK_IP \
   --phone          15551234567 \
   --wav            message.wav \
   --caller-id      1001 \
@@ -85,139 +122,55 @@ siprobo \
   --forward-digits 0,1
 ```
 
-If the remote party presses **0** or **1**, siprobo sends a SIP REFER and blind-transfers the call to `15559876543`.
-
----
-
-### 3. Auto transport + retry + logging
+### 2. Retry on failure with exponential backoff
 
 ```bash
 siprobo \
-  --host           192.0.2.10 \
-  --phone          15551234567 \
-  --wav            message.wav \
-  --caller-id      1001 \
-  --auth-user      1001 \
-  --auth-pass      yourpassword \
-  --transport      auto \
-  --max-retries    3 \
-  --retry-delay    5 \
-  --log-file       calls.log \
-  -v
+  --host        YOUR_ASTERISK_IP \
+  --phone       15551234567 \
+  --wav         message.wav \
+  --auth-user   1001 \
+  --auth-pass   yourpassword \
+  --max-retries 3 \
+  --retry-delay 5
 ```
 
-- `--transport auto` probes UDP first, falls back to TCP
-- `--max-retries 3` retries with 5 s → 10 s → 20 s backoff
-- `--log-file` appends one JSON record per attempt
-- `-v` prints raw SIP messages for debugging
+Waits: 5 s → 10 s → 20 s between attempts.
 
----
-
-### 4. SIP connectivity diagnostics
+### 3. Auto transport + JSON logging + verbose SIP trace
 
 ```bash
-siprobo-diag \
-  --host      192.0.2.10 \
-  --caller-id 1001 \
-  --auth-user 1001 \
-  --auth-pass yourpassword
-```
-
-Runs four checks in sequence: **ICMP ping → TCP port → UDP port → SIP OPTIONS**.
-
-Add `--call <number>` to run a live INVITE test:
-
-```bash
-siprobo-diag \
-  --host      192.0.2.10 \
+siprobo \
+  --host      YOUR_ASTERISK_IP \
+  --phone     15551234567 \
+  --wav       message.wav \
   --auth-user 1001 \
   --auth-pass yourpassword \
-  --call      15551234567 \
-  --hangup-after 5 \
+  --transport auto \
+  --log-file  calls.log \
   -v
 ```
 
----
-
-## All CLI Options
-
-### `siprobo`
-
-```
-required:
-  --host HOST             Asterisk IP or hostname
-  --phone PHONE           Destination number / extension
-  --wav FILE              WAV file to play (any sample rate / bit depth)
-
-SIP:
-  --port PORT             SIP port (default: 5060)
-  --transport {udp,tcp,auto}
-                          Transport protocol (default: udp)
-  --caller-id CALLER_ID   SIP From extension / caller-ID
-  --auth-user AUTH_USER   Digest auth username
-  --auth-pass AUTH_PASS   Digest auth password
-  --source-ip SOURCE_IP   Local IP to bind (default: auto-detect)
-  --dial-prefix PREFIX    Prefix prepended to --phone in Request-URI
-  --ring-timeout SECONDS  Seconds to wait for answer (default: 60)
-
-DTMF / transfer:
-  --forward-number NUMBER Blind-transfer destination on DTMF match
-  --forward-digits DIGITS Comma-separated trigger digits (default: 0)
-
-retry:
-  --max-retries N         Total call attempts (default: 1)
-  --retry-delay SECONDS   Initial wait between retries (default: 5.0)
-  --backoff-factor MULT   Exponential backoff multiplier (default: 2.0)
-
-  --log-file FILE         Append JSON call records to this file
-  -v, --verbose           Print raw SIP messages and RTP diagnostics
-```
-
-### `siprobo-diag`
-
-```
-  --host HOST             Asterisk IP or hostname (required)
-  --port PORT             SIP port (default: 5060)
-  --transport {udp,tcp}   Transport (default: udp)
-  --caller-id CALLER_ID   SIP caller-ID
-  --auth-user AUTH_USER   Digest auth username
-  --auth-pass AUTH_PASS   Digest auth password
-  --call PHONE            Run a live INVITE test to this number
-  --dial-prefix PREFIX    Prefix for Request-URI
-  --hangup-after SECONDS  Seconds after answer to send BYE (0 = wait)
-  --max-call-seconds N    Safety limit for answered calls (default: 60)
-  --skip-ping             Skip the ICMP ping test
-  -v, --verbose           Print raw SIP messages
-```
-
----
-
-## Python API
-
-### Single call
+### 4. Concurrent bulk dialling (Python API)
 
 ```python
-from siprobo.caller import make_call
+from siprobo.caller import make_calls_concurrent
 
-answered = make_call(
-    host           = "192.0.2.10",
-    port           = 5060,
-    phone          = "15551234567",
-    transport      = "udp",        # or "tcp" or "auto"
-    caller_id      = "1001",
-    auth_user      = "1001",
-    auth_pass      = "yourpassword",
-    wav_path       = "/path/to/message.wav",
-    forward_number = "15559876543",
-    forward_digits = ["0", "1"],
-    verbose        = False,
-    ring_timeout   = 60,
-    log_file       = "calls.log",
-)
-print("Answered:", answered)
+numbers = ["15551001001", "15551001002", "15551001003", "15551001004"]
+
+configs = [
+    {
+        "host": "YOUR_ASTERISK_IP", "phone": num, "wav_path": "message.wav",
+        "caller_id": "1001", "auth_user": "1001", "auth_pass": "yourpassword",
+    }
+    for num in numbers
+]
+
+results = make_calls_concurrent(configs, max_workers=10)
+print(f"{sum(results)}/{len(results)} calls answered")
 ```
 
-### Retry with exponential backoff
+### 5. Retry with Python API
 
 ```python
 from siprobo.caller import make_call_with_retry
@@ -226,8 +179,7 @@ answered = make_call_with_retry(
     max_retries    = 3,
     retry_delay    = 5.0,
     backoff_factor = 2.0,
-    # --- make_call kwargs below ---
-    host      = "192.0.2.10",
+    host      = "YOUR_ASTERISK_IP",
     phone     = "15551234567",
     wav_path  = "message.wav",
     auth_user = "1001",
@@ -235,57 +187,62 @@ answered = make_call_with_retry(
 )
 ```
 
-### Concurrent calls (bulk dialling)
+### 6. SIP connectivity diagnostics
 
-```python
-from siprobo.caller import make_calls_concurrent
+```bash
+# Check if Asterisk is reachable (ICMP, TCP, UDP, SIP OPTIONS)
+siprobo-diag --host YOUR_ASTERISK_IP --auth-user 1001 --auth-pass yourpassword
 
-configs = [
-    {"host": "192.0.2.10", "phone": "15551001001", "wav_path": "msg.wav",
-     "caller_id": "100", "auth_user": "100", "auth_pass": "secret"},
-    {"host": "192.0.2.10", "phone": "15551001002", "wav_path": "msg.wav",
-     "caller_id": "100", "auth_user": "100", "auth_pass": "secret"},
-    {"host": "192.0.2.10", "phone": "15551001003", "wav_path": "msg.wav",
-     "caller_id": "100", "auth_user": "100", "auth_pass": "secret"},
-]
-
-results = make_calls_concurrent(configs, max_workers=10)
-# results = [True, False, True]  — one bool per call
-answered_count = sum(results)
-print(f"{answered_count}/{len(configs)} calls answered")
-```
-
-### Diagnostics
-
-```python
-from siprobo.sip_core import test_sip_options, test_sip_invite
-
-# Check if Asterisk is reachable
-ok = test_sip_options(
-    host      = "192.0.2.10",
-    port      = 5060,
-    auth_user = "1001",
-    auth_pass = "yourpassword",
-)
-
-# Run a full live call test
-ok = test_sip_invite(
-    host         = "192.0.2.10",
-    port         = 5060,
-    phone_number = "15551234567",
-    auth_user    = "1001",
-    auth_pass    = "yourpassword",
-    hangup_after = 5,
-)
+# Run a live INVITE test and auto-hang-up after 5 seconds
+siprobo-diag --host YOUR_ASTERISK_IP --auth-user 1001 --auth-pass yourpassword \
+             --call 15551234567 --hangup-after 5 -v
 ```
 
 ---
 
-## Asterisk Setup
+## All CLI Options
 
-siprobo talks directly to Asterisk via raw SIP — no special modules required.
+### `siprobo` — Make a Call
 
-### Minimal PJSIP endpoint (`pjsip.conf`)
+| Option | Default | Description |
+|---|---|---|
+| `--host` | **required** | Asterisk IP or hostname |
+| `--phone` | **required** | Destination number / extension |
+| `--wav` | **required** | WAV file to play (any format) |
+| `--port` | `5060` | SIP port |
+| `--transport` | `udp` | `udp`, `tcp`, or `auto` |
+| `--caller-id` | _(empty)_ | SIP From extension |
+| `--auth-user` | _(empty)_ | Digest auth username |
+| `--auth-pass` | _(empty)_ | Digest auth password |
+| `--source-ip` | auto | Local IP to bind |
+| `--dial-prefix` | _(empty)_ | Prefix before phone in Request-URI |
+| `--ring-timeout` | `60` | Seconds to wait for answer |
+| `--forward-number` | _(empty)_ | Transfer target on DTMF |
+| `--forward-digits` | `0` | Digits that trigger transfer |
+| `--max-retries` | `1` | Total call attempts |
+| `--retry-delay` | `5.0` | Seconds between retries |
+| `--backoff-factor` | `2.0` | Exponential backoff multiplier |
+| `--log-file` | _(none)_ | JSON call log file |
+| `-v` / `--verbose` | off | Print raw SIP messages |
+
+### `siprobo-diag` — Test Connectivity
+
+| Option | Default | Description |
+|---|---|---|
+| `--host` | **required** | Asterisk IP or hostname |
+| `--port` | `5060` | SIP port |
+| `--auth-user` | _(empty)_ | Digest auth username |
+| `--auth-pass` | _(empty)_ | Digest auth password |
+| `--call` | _(none)_ | Run live INVITE to this number |
+| `--hangup-after` | `0` | Seconds after answer to BYE |
+| `--skip-ping` | off | Skip ICMP ping test |
+| `-v` | off | Verbose SIP output |
+
+---
+
+## Asterisk Configuration
+
+### PJSIP endpoint (`pjsip.conf`)
 
 ```ini
 [1001]
@@ -309,13 +266,10 @@ max_contacts=5
 
 ```ini
 [from-internal]
-; siprobo dials: sip:<phone>@<asterisk>
-exten => _X.,1,NoOp(siprobo outbound to ${EXTEN})
- same =>       n,Dial(PJSIP/${EXTEN}@your-trunk)
+exten => _X.,1,NoOp(siprobo outbound call to ${EXTEN})
+ same =>       n,Dial(PJSIP/${EXTEN}@your-trunk-name)
  same =>       n,Hangup()
 ```
-
-Reload after changes:
 
 ```bash
 asterisk -rx "dialplan reload"
@@ -324,23 +278,19 @@ asterisk -rx "pjsip reload"
 
 ---
 
-## WAV File Requirements
-
-siprobo accepts **any WAV file** and auto-converts on-the-fly:
+## WAV File Support
 
 | Input | Output |
 |---|---|
-| Any sample rate | 8 000 Hz |
+| Any sample rate (8kHz, 16kHz, 44.1kHz, 48kHz…) | 8 000 Hz |
 | Mono or stereo | Mono |
-| Any bit depth (8/16/24/32-bit PCM) | G.711 mu-law (PCMU) or A-law (PCMA) |
+| 8-bit, 16-bit, 24-bit, 32-bit PCM | G.711 PCMU or PCMA |
 
-The codec (PCMU vs PCMA) is **automatically selected** from the SDP answer — no manual configuration needed.
+Codec (PCMU vs PCMA) is **automatically selected** from the SDP answer — zero config needed.
 
 ---
 
 ## Call Log Format
-
-Each call appends one JSON line to `--log-file`:
 
 ```json
 {
@@ -361,26 +311,25 @@ Status values: `answered` · `no_answer` · `error`
 
 ## Troubleshooting
 
-| Symptom | Likely Cause | Fix |
+| Problem | Cause | Solution |
 |---|---|---|
 | `audioop not found` | Python 3.13+ | `pip install audioop-lts` |
-| 401/407 loop | Wrong credentials | Check `--auth-user` / `--auth-pass` |
-| 404 Not Found | Dialplan mismatch | Check `--dial-prefix` and dialplan context |
-| No answer / ring timeout | Firewall or wrong number | Run `siprobo-diag` first |
-| One-way audio | NAT / firewall on RTP port | Ensure UDP 20000–29999 is open |
-| WAV sounds wrong | Codec mismatch | Use `-v` to see which codec was negotiated |
-| BYE not matching dialog | Missing To-tag | Expected behaviour; siprobo extracts it from 200 OK |
+| 401/407 challenge loop | Wrong credentials | Check `--auth-user` / `--auth-pass` |
+| 404 Not Found | Dialplan mismatch | Verify `--dial-prefix` and context |
+| No answer (timeout) | Firewall or wrong IP | Run `siprobo-diag` first |
+| One-way audio | NAT / RTP firewall | Open UDP ports 20000–29999 |
+| WAV sounds distorted | Codec mismatch | Use `-v` to check negotiated codec |
 
 ---
 
-## Supported Environments
+## Supported PBX / SIP Servers
 
-| PBX / Server | Status |
+| Server | Status |
 |---|---|
-| Asterisk 16 / 18 / 20 / 21 | Tested |
-| FreePBX (Asterisk backend) | Compatible |
-| FusionPBX (FreeSWITCH backend) | Compatible (SIP standard) |
-| Any RFC 3261 compliant SIP server | Should work |
+| Asterisk 16 / 18 / 20 / 21 | ✅ Tested |
+| FreePBX | ✅ Compatible |
+| FusionPBX / FreeSWITCH | ✅ Compatible |
+| Any RFC 3261 SIP server | ✅ Should work |
 
 ---
 
@@ -389,25 +338,26 @@ Status values: `answered` · `no_answer` · `error`
 ```
 siprobo/
 ├── siprobo/
-│   ├── __init__.py      # Package root, version
-│   ├── sip_core.py      # SIP protocol helpers + siprobo-diag CLI
-│   └── caller.py        # Call flow, RTP streaming + siprobo CLI
+│   ├── __init__.py      # Package root, version, author
+│   ├── sip_core.py      # SIP/RTP protocol + siprobo-diag CLI
+│   └── caller.py        # Call engine, DTMF, RTP + siprobo CLI
 ├── README.md
 ├── LICENSE              # MIT
-└── pyproject.toml       # Build config (PEP 621)
+└── pyproject.toml       # PEP 621 build config
 ```
 
 ---
 
 ## Contributing
 
-Pull requests are welcome at [github.com/matifkhatri/siprobo](https://github.com/matifkhatri/siprobo).
+Pull requests are welcome at **[github.com/matifkhatri/siprobo](https://github.com/matifkhatri/siprobo)**.
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m "Add my feature"`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Open a Pull Request
+```bash
+git checkout -b feature/my-feature
+git commit -m "Add my feature"
+git push origin feature/my-feature
+# then open a Pull Request
+```
 
 ---
 
@@ -423,9 +373,11 @@ MIT — see [LICENSE](LICENSE) for full text.
 
 ---
 
-## Related Projects & Keywords
+## Tags & Keywords
 
-`python sip client` · `asterisk autodialer` · `sip ivr python` · `voip python library` ·
-`rtp wav playback` · `dtmf detection python` · `sip blind transfer` · `g711 python` ·
-`asterisk sip invite python` · `python pbx automation` · `sip refer python` ·
-`rfc3261 python` · `rfc2833 dtmf` · `python voip autodialer` · `asterisk python bot`
+`python sip client` · `python sip dialler` · `asterisk python` · `voip python` ·
+`sip autodialler python` · `python make phone call` · `sip invite python` ·
+`asterisk autodialer` · `rtp wav playback python` · `dtmf detection python` ·
+`sip blind transfer python` · `g711 python` · `python pbx` · `ivr python` ·
+`python voip bot` · `sip refer python` · `rfc3261 python` · `rfc2833 dtmf` ·
+`python call asterisk` · `asterisk sip python library` · `siprobo`
