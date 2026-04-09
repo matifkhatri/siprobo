@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+# ---------------------------------------------------------------------------
+# Project metadata  (PEP 621)
+# ---------------------------------------------------------------------------
+[project]
+name            = "siprobo"
+version         = "1.0.0"
+description     = "SIP auto-dialler with WAV playback, RFC 2833 DTMF detection, and blind transfer via Asterisk"
+readme          = "README.md"
+license         = { text = "MIT" }
+requires-python = ">=3.8"
+
+authors = [
+    { name = "matifkhatri", email = "matifkhatri@users.noreply.github.com" },
+]
+
+keywords = [
+    "sip", "voip", "asterisk", "rtp", "g711", "pcmu", "pcma",
+    "dtmf", "autodialer", "pbx", "telephony", "ivr",
+    "sip-client", "sip-dialer", "wav-playback", "blind-transfer",
+    "rfc2833", "rfc3261", "python-sip", "sip-call",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Telecommunications Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Telephony",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+# No mandatory third-party dependencies — everything is standard-library.
+# audioop-lts is needed only on Python 3.13+ (audioop was removed there).
+dependencies = []
+
+[project.optional-dependencies]
+# Install on Python 3.13+ where audioop was removed from the stdlib:
+#   pip install "siprobo[py313]"
+py313 = ["audioop-lts>=0.2.1"]
+
+# Developer extras
+dev = [
+    "build>=1.0",
+    "twine>=5.0",
+    "pytest>=8.0",
+]
+
+# ---------------------------------------------------------------------------
+# Console scripts  (CLI entry points)
+# ---------------------------------------------------------------------------
+[project.scripts]
+# Place a call, play a WAV, hang up:
+siprobo      = "siprobo.caller:main"
+# Connectivity diagnostic suite:
+siprobo-diag = "siprobo.sip_core:main"
+
+# ---------------------------------------------------------------------------
+# Project URLs
+# ---------------------------------------------------------------------------
+[project.urls]
+Homepage      = "https://github.com/matifkhatri/siprobo"
+Documentation = "https://github.com/matifkhatri/siprobo#readme"
+"Bug Tracker" = "https://github.com/matifkhatri/siprobo/issues"
+Changelog     = "https://github.com/matifkhatri/siprobo/releases"
+"Source Code" = "https://github.com/matifkhatri/siprobo"
+
+# ---------------------------------------------------------------------------
+# Setuptools configuration
+# ---------------------------------------------------------------------------
+[tool.setuptools.packages.find]
+where   = ["."]
+include = ["siprobo*"]
+
+# Exclude test/build artefacts from the sdist
+[tool.setuptools.package-data]
+siprobo = ["py.typed"]
