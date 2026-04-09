@@ -16,7 +16,8 @@ siprobo.caller
 """
 
 __version__ = "1.0.0"
-__author__ = "siprobo contributors"
+__author__ = "matifkhatri"
+__email__  = "atifkhatri555@gmail.com"
 __license__ = "MIT"
 
 __all__ = [
